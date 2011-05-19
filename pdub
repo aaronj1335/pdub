@@ -13,6 +13,7 @@ python << EOPYTHON
 import sys,vim
 sys.path.append('%s')
 import pdub
+print 'encrypting to ', pdub.PDUBS_FILE
 pdub.encrypt_to_file('\\n'.join(vim.current.buffer[:]), 
 					pdub.PDUBS_FILE, vim.eval('g:password'))
 EOPYTHON
@@ -48,11 +49,17 @@ def encrypt_to_file(text, filename, key):
 
 	[ os.close(fd) for fd in (read_end, write_end) ]
 
+class DecryptionException(Exception): pass
+
 def decrypt_file(filename, key):
 	crypt = Popen(['gpg', '-d', '--passphrase-fd', '0', filename], stdin=PIPE,
-			stdout=PIPE)
+			stdout=PIPE, stderr=PIPE)
 	crypt.stdin.write(key + '\n')
-	return crypt.stdout.read()
+	r = crypt.stdout.read()
+	if crypt.wait() == 0:
+		return r
+	else:
+		raise DecryptionException('could not decrypt')
 
 def die(msg):
 	sys.stderr.write('ERROR: %s\n' % msg)
@@ -87,13 +94,16 @@ def main():
 
 	open(VIM_SCRIPT_FILE, 'w').write(VIM_SCRIPT)
 
+	try:
+		txt = decrypt_file(PDUBS_FILE, key)
+	except DecryptionException:
+		die('could not decrypt file -- possibly an incorrect key')
+
 	vim = Popen(['vim', '-n', '-c', 'source %s' % VIM_SCRIPT_FILE, '-'],
 			stdin=PIPE)
-
 	vim.stdin.write('%s %s\n' % (PDUBS_FILE, key))
-	vim.stdin.write(decrypt_file(PDUBS_FILE, key))
+	vim.stdin.write(txt)
 	vim.stdin.close()
-
 	vim.wait()
 
 	os.remove(VIM_SCRIPT_FILE)
