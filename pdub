@@ -87,7 +87,7 @@ def main():
 
 	open(VIM_SCRIPT_FILE, 'w').write(VIM_SCRIPT)
 
-	vim = Popen(['vim', '-c', '-n', 'source %s' % VIM_SCRIPT_FILE, '-'],
+	vim = Popen(['vim', '-n', '-c', 'source %s' % VIM_SCRIPT_FILE, '-'],
 			stdin=PIPE)
 
 	vim.stdin.write('%s %s\n' % (PDUBS_FILE, key))
