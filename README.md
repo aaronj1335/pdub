@@ -14,6 +14,10 @@ and no one wants complications when it comes to personal data.
 temporary files.  It doesn't use `gpg`'s "--passphrase" option.  It uses pipes
 like a good plumber so your passwords don't get spilled all over the place.
 
+Need to recover your passwords without `pdub`?  Just run the following:
+
+	$ gpg -d ~/.pdub/pdubs.json.gpg
+
 
 Requirements
 ------------
