@@ -66,7 +66,10 @@ def die(msg):
 	sys.exit(1)
 
 def main():
-	bins = [ f for d in os.environ['PATH'].split(':') for f in os.listdir(d) ]
+	bins = [ f for d in os.environ['PATH'].split(':')
+                if os.path.exists(d)
+                    for f in os.listdir(d) ]
+
 	if 'gpg' not in bins: die('"gpg" not found')
 
 	v = Popen(['vim', '--version'], stdout=PIPE)
